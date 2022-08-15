@@ -8,7 +8,7 @@ SELECT * FROM sales_info1;
 
 ---converting date column from text to datetime
 
-ALTER TABLE sales_info1 ALTER COLUMN orderdate TYPE DATE using to_date(orderdate, 'MM-DD-YYYY');
+TABLE sales_info1 ALTER COLUMN orderdate TYPE DATE using to_date(orderdate, 'MM-DD-YYYY');
 
 SELECT * from sales_info1
 
@@ -88,8 +88,6 @@ select
 into rfm_table
 from rfm_calc c
 
-ALTER TABLE rfm_table ALTER COLUMN rfm_cell_string TYPE integer
-
 select * from rfm_table
 
 
@@ -115,11 +113,11 @@ ALTER TABLE sales_info1 ALTER COLUMN productcode TYPE VARCHAR
 
 --What products are most often sold together? 
 --select * from [dbo].[sales_data_sample] where ORDERNUMBER =  10411
-select distinct orderdate, string_agg(
-    (productcode ',')
-	from sales_info1 
-	where ordernumber in 
-	 (
+SELECT distinct ordernumber,
+  (SELECT string_agg(productcode, ', ') productcode
+  FROM sales_info1 p
+  WHERE ordernumber in 
+   	 (
 	 select ordernumber 
 		 from (
 		 select ordernumber, count (*) rn
@@ -127,11 +125,13 @@ select distinct orderdate, string_agg(
 		 where status = 'Shipped'
 		 group by ordernumber
 		 )m
-		 where rn = 2
+		 where rn = 3
+		 	)
+   and p.ordernumber = s.ordernumber
 	)
-	)
-from sales_info1 
+from sales_info1 s
 order by 2 desc
+
 
 ---EXTRAs----
 --What city has the highest number of sales in a specific country
